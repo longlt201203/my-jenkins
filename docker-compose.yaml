@@ -1,0 +1,37 @@
+version: "3.9"
+services:
+  docker:
+    container_name: jenkins-docker
+    image: docker:dind
+    privileged: true
+    env_file:
+      - .env.dind
+    ports:
+      - 2376:2376
+    volumes:
+      - ./jenkins-docker-certs:/certs/client
+      - ./jenkins-data:/var/jenkins_home
+    networks:
+      - jenkins_net
+
+  jenkins-blueocean:
+    container_name: jenkins-blueocean
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env.jenkins
+    ports:
+      - 8080:8080
+      - 50000:50000
+    volumes:
+      - ./jenkins-data:/var/jenkins_home
+      - ./jenkins-docker-certs:/certs/client:ro
+    networks:
+      - jenkins_net
+    depends_on:
+      - docker
+
+networks:
+  jenkins_net:
+    name: jenkins_net
